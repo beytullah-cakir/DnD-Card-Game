@@ -34,6 +34,7 @@ public class CardInteraction : MonoBehaviour
 
     private List<WorldAbilityButton> spawnedButtons = new List<WorldAbilityButton>();
     private int selectedAbilityIndex = -1;
+    private float lastClickTime = -1f;
 
     // --- STATIC INPUT MANAGER ---
     // Her kartta Update çalışır ama sadece biri o kare işlemini yapmalı.
@@ -166,8 +167,17 @@ public class CardInteraction : MonoBehaviour
             // Bir karta tıklandı
             if (bestCard.isSelected)
             {
-                // Zaten seçiliyse kapat (toggle)
-                bestCard.Deselect();
+                // Zaten seçiliyse
+                // EĞER BİR YETENEK SEÇİLİYSE -> Karta tıklayınca da SALDIR
+                if (bestCard.selectedAbilityIndex != -1 && AbilityManager.Instance != null)
+                {
+                    AbilityManager.Instance.OnAttack();
+                }
+                else
+                {
+                    // Yetenek seçili değilse kapat (toggle)
+                    bestCard.Deselect();
+                }
             }
             else
             {
@@ -313,7 +323,19 @@ public class CardInteraction : MonoBehaviour
 
     private void OnAbilityClicked(int index)
     {
+        // Eğer zaten seçili olan yeteneğe tekrar tıklanırsa -> SALDIR
+        if (selectedAbilityIndex == index)
+        {
+            if (AbilityManager.Instance != null)
+            {
+                AbilityManager.Instance.OnAttack();
+            }
+            return;
+        }
+
+        // --- YENİ SEÇİM ---
         selectedAbilityIndex = index;
+        lastClickTime = -1f;
         
         // Buton parlama
         foreach (var btn in spawnedButtons)

@@ -287,7 +287,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c84d89ca35ad7ca40b66c6dadefbf7e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardInteraction
-  liftAmount: 3
+  liftAmount: 1.5
   moveDuration: 0.3
   cardData: {fileID: 11400000, guid: fe8b6d4abbb69144d85035ce63f21372, type: 2}
   abilityButtonPrefab: {fileID: 3057436048436915331, guid: 0753fe0b4fdb1934dad1fc7d8aa52c35, type: 3}

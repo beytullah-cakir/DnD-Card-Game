@@ -6,7 +6,7 @@ public class CardHand : MonoBehaviour
     [Header("Dizilim Ayarları")]
     public int cardCount = 5;
     public float spacing = 1.3f;        // Kartlar arası yatay mesafe
-    public float selectionLiftAmount = 1.5f; // Seçilen kartın ne kadar yukarı çıkacağı
+
     public float zOffsetAmount = 0.1f;  // Kartların derinlik farkı
 
     [Header("Referanslar")]
@@ -47,11 +47,11 @@ public class CardHand : MonoBehaviour
             cards[i].transform.localRotation = Quaternion.identity;
 
             // Kartın seçim yükselme ayarını Hand üzerinden güncelle
-            CardInteraction interaction = cards[i].GetComponent<CardInteraction>();
-            if (interaction != null)
-            {
-                interaction.liftAmount = selectionLiftAmount;
-            }
+            // CardInteraction interaction = cards[i].GetComponent<CardInteraction>();
+            // if (interaction != null)
+            // {
+            //     // interaction.liftAmount = selectionLiftAmount; // Kaldırıldı
+            // }
         }
     }
 
