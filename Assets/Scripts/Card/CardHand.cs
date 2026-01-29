@@ -1,28 +1,97 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
-public class CardHand : MonoBehaviour
+public class CardHand : NetworkBehaviour
 {
     [Header("Dizilim Ayarları")]
-    public int cardCount = 5;
-    public float spacing = 1.3f;        // Kartlar arası yatay mesafe
+    [Header("Dizilim Ayarları")]
+    public int cardCount = 4; // Resimde 4 kart var
+    public float spacing = 0.6f;        // Benim kartlarım arası mesafe
+    public float remoteSpacing = 0.6f;  // Rakip kartlar arası mesafe (Aynı olsun diye ekledim)
 
     public float zOffsetAmount = 0.1f;  // Kartların derinlik farkı
 
+    [Header("Online Pozisyonlar")]
+    [Header("Online Pozisyonlar")]
+    public float onlineY_Local = -4.0f;  // Benim kartlarımın Y yüksekliği
+    public float onlineY_Remote = 4.0f;  // Rakibin kartlarının Y yüksekliği
+    
     [Header("Referanslar")]
     public GameObject cardPrefab;
     public Transform handContainer;
 
     private List<GameObject> cards = new List<GameObject>();
 
-    void Start()
+    private void Start()
     {
-        if (handContainer == null) handContainer = this.transform;
-        if (handContainer.childCount == 0 && cardPrefab != null) SpawnCards();
+        base.OnNetworkSpawn();
+        
+        // 1. Pozisyonu Ayarla
+        if (IsOwner)
+        {
+            transform.position = new Vector3(0, onlineY_Local, 0);
+            name = "MyHand";
+        }
+        else
+        {
+            transform.position = new Vector3(0, onlineY_Remote, 0);
+            name = "EnemyHand";
+        }
+
+        // 2. Kartları Doğur (Sadece Sahibi)
+        if (IsOwner)
+        {
+            SpawnInitialHandServerRpc();
+        }
+        
+        // 3. Client'lar için de dizilimi zorla (Gecikmeli)
+        Invoke(nameof(ForceArrange), 0.5f);
+        Invoke(nameof(ForceArrange), 1.0f);
+    }
+    
+    private void ForceArrange()
+    {
         ArrangeCards();
     }
 
-    [ContextMenu("Kartları Diz")]
+    [ServerRpc]
+    private void SpawnInitialHandServerRpc()
+    {
+        for (int i = 0; i < cardCount; i++)
+        {
+            GameObject newCard = Instantiate(cardPrefab);
+            var netObj = newCard.GetComponent<NetworkObject>();
+            if (netObj != null)
+            {
+                netObj.SpawnWithOwnership(OwnerClientId);
+                netObj.TrySetParent(transform);
+            }
+        }
+    }
+
+    private void Update()
+    {
+        // Kart sayısı değiştiyse listeyi güncelle ve yeniden diz
+        if (transform.childCount != cards.Count)
+        {
+            ArrangeCards();
+        }
+        
+        // Emniyet: Eğer hiç kart listem yoksa ama çocuklarım varsa, listeyi doldur
+        if (cards.Count == 0 && transform.childCount > 0)
+        {
+            RefreshCardList();
+            ArrangeCards();
+        }
+    }
+
+    private void OnTransformChildrenChanged()
+    {
+        // Child eklendiğinde hemen diz
+        ArrangeCards();
+    }
+
     [ContextMenu("Kartları Diz")]
     public void ArrangeCards()
     {
@@ -30,28 +99,23 @@ public class CardHand : MonoBehaviour
         int count = cards.Count;
         if (count == 0) return;
 
-        // Linear Layout: Yan yana dizilim
-        // Kartlar merkezden eşit uzaklıkta sola ve sağa dağıtılır.
-        
-        float totalWidth = (count - 1) * spacing;
+        // Sahibi ben isem 'spacing', değilsem 'remoteSpacing' kullan
+        float currentSpacing = IsOwner ? spacing : remoteSpacing;
+
+        float totalWidth = (count - 1) * currentSpacing;
         float startX = -totalWidth / 2f;
 
         for (int i = 0; i < count; i++)
         {
-            float x = startX + (i * spacing);
+            if(cards[i] == null) continue;
+
+            float x = startX + (i * currentSpacing);
             float y = 0f;
-            
             float z = -i * zOffsetAmount; 
 
+            // Local Position kullanarak Hand'e göre konumlandır
             cards[i].transform.localPosition = new Vector3(x, y, z);
             cards[i].transform.localRotation = Quaternion.identity;
-
-            // Kartın seçim yükselme ayarını Hand üzerinden güncelle
-            // CardInteraction interaction = cards[i].GetComponent<CardInteraction>();
-            // if (interaction != null)
-            // {
-            //     // interaction.liftAmount = selectionLiftAmount; // Kaldırıldı
-            // }
         }
     }
 
@@ -62,11 +126,12 @@ public class CardHand : MonoBehaviour
         foreach (Transform child in handContainer) cards.Add(child.gameObject);
     }
 
-    public void SpawnCards()
+    // Eski SpawnCards metodunu Offline için tutuyoruz
+    public void SpawnCardsOffline()
     {
         if (cardPrefab == null || handContainer == null) return;
 
-        // Önce temizle
+        // Temizle
         List<GameObject> children = new List<GameObject>();
         foreach (Transform child in handContainer) children.Add(child.gameObject);
         foreach (var child in children) { if (Application.isPlaying) Destroy(child); else DestroyImmediate(child); }
@@ -86,6 +151,7 @@ public class CardHand : MonoBehaviour
 
     private void OnValidate()
     {
-        if (handContainer != null) ArrangeCards();
+        if (handContainer != null && (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening)) 
+            ArrangeCards();
     }
 }

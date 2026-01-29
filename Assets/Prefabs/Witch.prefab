@@ -147,9 +147,10 @@ GameObject:
   - component: {fileID: 4824259421324508376}
   - component: {fileID: 5180579088883905263}
   - component: {fileID: -2784512044318240555}
+  - component: {fileID: 3640458400284666660}
   - component: {fileID: 9191596960926121837}
   m_Layer: 0
-  m_Name: Card
+  m_Name: Witch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -218,7 +219,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -8114219760886086350, guid: 5f1fa11f600557b439aef9fb5c7d01a1, type: 3}
+  m_Sprite: {fileID: 1409633066753250687, guid: 252ea2e5f38c7d240bb603bcdcfeec70, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -267,7 +268,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.0333333, y: 3.1066666}
+    oldSize: {x: 2.6564498, y: 3.7186666}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -275,6 +276,31 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2.0333333, y: 3.1066666}
   m_EdgeRadius: 0
+--- !u!114 &3640458400284666660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1431446438499623699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 1272426508
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &9191596960926121837
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -287,9 +313,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c84d89ca35ad7ca40b66c6dadefbf7e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardInteraction
+  ShowTopMostFoldoutHeaderGroup: 1
   liftAmount: 1.5
   moveDuration: 0.3
   cardData: {fileID: 11400000, guid: fe8b6d4abbb69144d85035ce63f21372, type: 2}
+  cardBackSprite: {fileID: 3228755414728047453, guid: 6b83eb12e7a857d40827cd1d2e9be505, type: 3}
   abilityButtonPrefab: {fileID: 3057436048436915331, guid: 0753fe0b4fdb1934dad1fc7d8aa52c35, type: 3}
   abilityHeight: 2.5
   abilitySpread: 0.8

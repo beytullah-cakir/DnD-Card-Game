@@ -3,8 +3,9 @@ using UnityEngine.InputSystem;
 using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
+using Unity.Netcode;
 
-public class CardInteraction : MonoBehaviour
+public class CardInteraction : NetworkBehaviour
 {
     [Header("Animation Settings")]
     public float liftAmount = 1.5f;
@@ -12,6 +13,7 @@ public class CardInteraction : MonoBehaviour
 
     [Header("Data")]
     public CardData cardData;
+    public Sprite cardBackSprite; // Arka yüz görseli
     public GameObject abilityButtonPrefab;
 
     [Header("Ability Button Settings")]
@@ -34,11 +36,17 @@ public class CardInteraction : MonoBehaviour
 
     private List<WorldAbilityButton> spawnedButtons = new List<WorldAbilityButton>();
     private int selectedAbilityIndex = -1;
-    private float lastClickTime = -1f;
+
 
     // --- STATIC INPUT MANAGER ---
     // Her kartta Update çalışır ama sadece biri o kare işlemini yapmalı.
     private static int lastProcessedFrame = -1;
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        UpdateCardVisuals();
+    }
 
     private void Start()
     {
@@ -49,6 +57,24 @@ public class CardInteraction : MonoBehaviour
         if (spriteRenderer) originalOrder = spriteRenderer.sortingOrder;
         
         HideAbilityInfo(); // Başlangıçta gizle
+    }
+
+    private void UpdateCardVisuals()
+    {
+        if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+
+        if (IsOwner)
+        {
+            // Sahibiysen ön yüzü gör
+            if (cardData != null && cardData.artwork != null) 
+                spriteRenderer.sprite = cardData.artwork;
+        }
+        else
+        {
+            // Rakip isen arka yüzü gör
+            if (cardBackSprite != null) 
+                spriteRenderer.sprite = cardBackSprite;
+        }
     }
 
     private void Update()
@@ -111,6 +137,9 @@ public class CardInteraction : MonoBehaviour
                 var card = hit.transform.GetComponent<CardInteraction>();
                 if (card != null)
                 {
+                    // Sadece kendi kartlarımızı seçebiliriz
+                    if (card.IsSpawned && !card.IsOwner) continue;
+
                     SpriteRenderer sr = card.GetComponent<SpriteRenderer>();
                     int sortOrder = (sr != null) ? sr.sortingOrder : 0;
                     float zPos = card.transform.position.z;
@@ -335,7 +364,7 @@ public class CardInteraction : MonoBehaviour
 
         // --- YENİ SEÇİM ---
         selectedAbilityIndex = index;
-        lastClickTime = -1f;
+
         
         // Buton parlama
         foreach (var btn in spawnedButtons)
